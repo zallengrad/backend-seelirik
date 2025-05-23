@@ -15,9 +15,12 @@ const init = async () => {
   const userHandler = require('./api/users/handler');
   const riwayatRoutes = require('./api/riwayat/routes');
   const riwayatHandler = require('./api/riwayat/handler');
+  const kameraRoutes = require('./api/kamera/routes');
+  const kameraHandler = require('./api/kamera/handler');
 
   server.route(userRoutes(userHandler));
   server.route(riwayatRoutes(riwayatHandler));
+  server.route(kameraRoutes(kameraHandler));
 
   await server.start();
   console.log(`Server berjalan pada ${server.info.uri}`);

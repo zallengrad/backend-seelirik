@@ -1,0 +1,18 @@
+[
+  {
+    "id": "krkyXx6Z558u",
+    "userId": "_x-emWcGcaQiBlqC",
+    "name": "Kamera Belakang",
+    "path": "/dev/cam0",
+    "status": "connected",
+    "createdAt": "2025-05-23T18:05:13.582Z"
+  },
+  {
+    "id": "Rn8wYw_Piy2j",
+    "userId": "_x-emWcGcaQiBlqC",
+    "name": "Kamera Belakang",
+    "path": "/dev/cam0",
+    "status": "connected",
+    "createdAt": "2025-05-23T18:08:18.991Z"
+  }
+]
