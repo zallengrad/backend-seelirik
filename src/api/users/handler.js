@@ -1,26 +1,26 @@
 const { nanoid } = require('nanoid');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const fs = require('fs');
+const fs = require('fs/promises');
 const path = require('path');
 const { registerUserSchema, loginUserSchema } = require('./validator');
 const { verifyToken } = require('../../utils/auth');
 
 const usersFilePath = path.join(__dirname, '../../../data/users.json');
 
-// Fungsi untuk load data user dari file JSON
-function loadUsersFromFile() {
+// Baca users.json secara asynchronous
+async function loadUsersFromFile() {
   try {
-    const data = fs.readFileSync(usersFilePath);
+    const data = await fs.readFile(usersFilePath, 'utf-8');
     return JSON.parse(data);
   } catch (error) {
     return [];
   }
 }
 
-// Fungsi untuk simpan data user ke file JSON
-function saveUsersToFile(users) {
-  fs.writeFileSync(usersFilePath, JSON.stringify(users, null, 2));
+// Tulis users.json secara asynchronous
+async function saveUsersToFile(users) {
+  await fs.writeFile(usersFilePath, JSON.stringify(users, null, 2));
 }
 
 const registerUserHandler = async (request, h) => {
@@ -32,16 +32,9 @@ const registerUserHandler = async (request, h) => {
     }).code(400);
   }
 
-  const {
-    username,
-    email,
-    password,
-    storeName,
-    storeLocation,
-    storeDescription,
-  } = request.payload;
+  const { username, email, password, storeName, storeLocation, storeDescription } = request.payload;
 
-  const users = loadUsersFromFile();
+  const users = await loadUsersFromFile();
 
   if (users.find((u) => u.email === email)) {
     return h.response({
@@ -51,7 +44,6 @@ const registerUserHandler = async (request, h) => {
   }
 
   const id = nanoid(16);
-  const createdAt = new Date().toISOString();
   const hashedPassword = await bcrypt.hash(password, 10);
 
   const newUser = {
@@ -62,18 +54,16 @@ const registerUserHandler = async (request, h) => {
     storeName,
     storeLocation,
     storeDescription,
-    createdAt,
+    createdAt: new Date().toISOString(),
   };
 
   users.push(newUser);
-  saveUsersToFile(users);
+  await saveUsersToFile(users);
 
   return h.response({
     status: 'success',
     message: 'User berhasil didaftarkan',
-    data: {
-      userId: id,
-    },
+    data: { userId: id },
   }).code(201);
 };
 
@@ -87,7 +77,7 @@ const loginUserHandler = async (request, h) => {
   }
 
   const { email, password } = request.payload;
-  const users = loadUsersFromFile();
+  const users = await loadUsersFromFile();
   const user = users.find((u) => u.email === email);
 
   if (!user) {
@@ -97,9 +87,8 @@ const loginUserHandler = async (request, h) => {
     }).code(401);
   }
 
-  const passwordMatch = await bcrypt.compare(password, user.password);
-
-  if (!passwordMatch) {
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) {
     return h.response({
       status: 'fail',
       message: 'Email atau password salah',
@@ -113,16 +102,14 @@ const loginUserHandler = async (request, h) => {
   return {
     status: 'success',
     message: 'Login berhasil',
-    data: {
-      token,
-    },
+    data: { token },
   };
 };
 
 const getMeHandler = async (request, h) => {
   try {
     const decoded = verifyToken(request);
-    const users = loadUsersFromFile();
+    const users = await loadUsersFromFile();
     const user = users.find((u) => u.id === decoded.userId);
 
     if (!user) {
