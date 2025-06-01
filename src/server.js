@@ -1,0 +1,44 @@
+const Hapi = require('@hapi/hapi');
+const userRoutes = require('./api/users/userRoutes');
+const cameraRoutes = require('./api/cameras/cameraRoutes');
+const historyRoutes = require('./api/histories/historyRoutes');
+
+
+
+
+
+const init = async () => {
+  const server = Hapi.server({
+    port: 3000,
+    host: 'localhost',
+    routes: {
+      cors: {
+        origin: ['*'], 
+        headers: ['Accept', 'Content-Type', 'Authorization'],
+        credentials: true,
+      },
+    },
+  });
+
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: () => {
+      return { message: 'SeeLirik Backend is running!' };
+    },
+  });
+
+  server.route(userRoutes);
+  server.route(cameraRoutes);
+  server.route(historyRoutes);
+
+  await server.start();
+  console.log('🚀 SeeLirik Backend Server berjalan di:', server.info.uri);
+};
+
+process.on('unhandledRejection', (err) => {
+  console.log(err);
+  process.exit(1);
+});
+
+init();
