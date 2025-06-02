@@ -1,6 +1,6 @@
 const supabase = require('../utils/supabaseClient');
 
-const addCamera = async ({ user_id, name, device_id }) => {
+  const addCamera = async ({ user_id, name, device_id }) => {
   const { data, error } = await supabase
     .from('cameras')
     .insert([{ user_id, name, device_id, is_active: true }])
@@ -11,10 +11,8 @@ const addCamera = async ({ user_id, name, device_id }) => {
   console.log('⚠️ [DEBUG] Supabase Insert Error:', error);
 
   return { camera: data, error };
-};
-
-
-const findCameraByDeviceId = async (device_id) => {
+  };
+  const findCameraByDeviceId = async (device_id) => {
     const { data, error } = await supabase
       .from('cameras')
       .select('*')
@@ -24,10 +22,36 @@ const findCameraByDeviceId = async (device_id) => {
   
     return { camera: data, error };
   };
+  const getCamerasByUserId = async (user_id) => {
+    const { data, error } = await supabase
+      .from('cameras')
+      .select('*')
+      .eq('user_id', user_id)
+      .eq('is_active', true); // hanya kamera aktif
+    return { cameras: data, error };
+  };
+  const updateCameraById = async (id, updates) => {
+    const { data, error } = await supabase
+      .from('cameras')
+      .update(updates)
+      .eq('id', id)
+      .single();
+    return { camera: data, error };
+  };
+  const deleteCameraById = async (id) => {
+    const { data, error } = await supabase
+      .from('cameras')
+      .update({ is_active: false })
+      .eq('id', id)
+      .single();
+    return { camera: data, error };
+  };
   
   module.exports = {
     addCamera,
-    findCameraByDeviceId, 
+    findCameraByDeviceId,
+    getCamerasByUserId,
+    updateCameraById,
+    deleteCameraById,
   };
-  
 

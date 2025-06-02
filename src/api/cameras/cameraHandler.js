@@ -1,7 +1,19 @@
 const { verifyAuthHeader } = require('../../utils/auth');
-const { addCamera, findCameraByDeviceId } = require('../../services/cameraService');
-const { startCameraWorker } = require('../../services/worker');
+const {
+  addCamera,
+  findCameraByDeviceId,
+  getCamerasByUserId,
+  updateCameraById,
+  deleteCameraById,
+} = require('../../services/cameraService');
+const {
+  startCameraWorker,
+  stopCameraWorker,
+} = require('../../services/worker');
 
+
+
+// POST /cameras
 const postCameraHandler = async (request, h) => {
   try {
     const decoded = verifyAuthHeader(request);
@@ -37,7 +49,70 @@ const postCameraHandler = async (request, h) => {
   }
 };
 
+// GET /cameras
+const getCamerasHandler = async (request, h) => {
+  try {
+    const decoded = verifyAuthHeader(request);
+    const { cameras, error } = await getCamerasByUserId(decoded.id);
+
+    if (error) return h.response({ message: 'Failed to fetch cameras' }).code(500);
+    return h.response({ cameras }).code(200);
+  } catch (err) {
+    return h.response({ message: 'Unauthorized' }).code(401);
+  }
+};
+
+// PUT /cameras/:id
+const updateCameraHandler = async (request, h) => {
+  try {
+    verifyAuthHeader(request);
+    const { id } = request.params;
+    const { name, device_id } = request.payload;
+
+    const updates = { name, device_id };
+    const { camera, error } = await updateCameraById(id, updates);
+
+    if (error || !camera) {
+      return h.response({ message: 'Failed to update camera' }).code(500);
+    }
+
+    // 🔁 Restart worker kamera
+    stopCameraWorker(id);
+    startCameraWorker(camera);
+
+    return h.response({
+      message: 'Camera updated & worker restarted',
+      camera,
+    }).code(200);
+  } catch (err) {
+    return h.response({ message: 'Unauthorized' }).code(401);
+  }
+};
+
+
+// DELETE /cameras/:id
+const deleteCameraHandler = async (request, h) => {
+  try {
+    verifyAuthHeader(request);
+    const { id } = request.params;
+
+    const { camera, error } = await deleteCameraById(id);
+    if (error || !camera) {
+      return h.response({ message: 'Failed to delete camera' }).code(500);
+    }
+
+    stopCameraWorker(id); // 🛑 Stop loop jika kamera dihapus
+
+    return h.response({ message: 'Camera deleted (deactivated)', camera }).code(200);
+  } catch (err) {
+    return h.response({ message: 'Unauthorized' }).code(401);
+  }
+};
+
 
 module.exports = {
   postCameraHandler,
+  getCamerasHandler,
+  updateCameraHandler,
+  deleteCameraHandler,
 };
