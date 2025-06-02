@@ -40,7 +40,7 @@ const startCameraWorker = (camera) => {
     } else {
       console.log(`📸 Deteksi dari '${camera_name}' disimpan ke riwayat!`);
     }
-  }, 10_000); // interval 10 detik
+  }, 60_000); // interval 10 detik
 
   // Simpan interval ID agar bisa dihentikan nanti
   cameraLoops[camera_id] = interval;

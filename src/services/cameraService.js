@@ -43,9 +43,12 @@ const supabase = require('../utils/supabaseClient');
       .from('cameras')
       .update({ is_active: false })
       .eq('id', id)
-      .single();
+      .select()        
+      .single();       
+  
     return { camera: data, error };
   };
+  
   
   module.exports = {
     addCamera,
