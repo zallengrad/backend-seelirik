@@ -23,15 +23,28 @@ const postCameraHandler = async (request, h) => {
       return h.response({ message: 'Name and device_id are required' }).code(400);
     }
 
+    // Cek apakah device_id sudah pernah digunakan oleh user ini
+    const { data: existing, error: findError } = await supabase
+      .from('cameras')
+      .select('*')
+      .eq('user_id', decoded.id)
+      .eq('device_id', device_id)
+      .single();
+
+    if (existing) {
+      console.log('🔁 [INFO] Device ID sudah pernah digunakan. Hapus data lama:', existing.id);
+      await supabase
+        .from('cameras')
+        .delete()
+        .eq('id', existing.id); // hard delete baris lama
+    }
+
+    // Tambahkan entri baru
     const { camera, error } = await addCamera({
       user_id: decoded.id,
       name,
       device_id,
     });
-
-    console.log('✅ [DEBUG] Payload:', { user_id: decoded.id, name, device_id });
-    console.log('📸 [DEBUG] Inserted Camera:', camera);
-    console.log('⚠️ [DEBUG] Supabase Insert Error:', error);
 
     if (error || !camera) {
       return h.response({ message: 'Failed to add camera', error }).code(500);
@@ -48,6 +61,7 @@ const postCameraHandler = async (request, h) => {
     return h.response({ message: 'Unauthorized or server error' }).code(401);
   }
 };
+
 
 // GET /cameras
 const getCamerasHandler = async (request, h) => {
