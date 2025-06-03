@@ -41,13 +41,14 @@ const supabase = require('../utils/supabaseClient');
   const deleteCameraById = async (id) => {
     const { data, error } = await supabase
       .from('cameras')
-      .update({ is_active: false })
+      .delete() // 🔥 hard delete
       .eq('id', id)
-      .select()        
-      .single();       
+      .select()
+      .single();
   
     return { camera: data, error };
   };
+  
   
   
   module.exports = {
