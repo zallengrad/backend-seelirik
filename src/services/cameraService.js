@@ -44,7 +44,7 @@ const supabase = require('../utils/supabaseClient');
       .delete() // 🔥 hard delete
       .eq('id', id)
       .select()
-      .single();
+      .maybeSingle();
   
     return { camera: data, error };
   };
