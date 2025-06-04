@@ -57,6 +57,8 @@ const init = async () => {
   httpServer.listen(port, () => {
     console.log(`🚀 Server running at http://0.0.0.0:${port}`);
   });
+
+}
   
 
 process.on('unhandledRejection', (err) => {
