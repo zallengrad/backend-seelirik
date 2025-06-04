@@ -40,7 +40,9 @@ const postCameraHandler = async (request, h) => {
       return h.response({ message: 'Failed to add camera', error }).code(500);
     }
 
-    startCameraWorker(camera);
+    const io = request.server.app.io;
+    startCameraWorker(camera, io);
+
 
     return h.response({
       message: 'Camera added successfully',
@@ -80,7 +82,9 @@ const updateCameraHandler = async (request, h) => {
     }
 
     stopCameraWorker(id);
-    startCameraWorker(camera);
+    const io = request.server.app.io;
+    startCameraWorker(camera, io);
+    
 
     return h.response({
       message: 'Camera updated & worker restarted',

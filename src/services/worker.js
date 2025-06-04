@@ -1,12 +1,11 @@
+// worker.js
 const { detectShopliftingDummy } = require('./mlService');
 const { simpanKeRiwayat } = require('./historyService');
-const io = require('../server').app.io;
 
-
-// Registry untuk semua kamera yang sedang jalan loop deteksinya
 const cameraLoops = {};
+let ioRef = null; // 🔑 io disimpan nanti
 
-const startCameraWorker = (camera) => {
+const startCameraWorker = (camera, io) => {
   const { id: camera_id, name: camera_name, device_id } = camera;
 
   if (cameraLoops[camera_id]) {
@@ -15,6 +14,8 @@ const startCameraWorker = (camera) => {
   }
 
   console.log(`🚀 Memulai worker kamera: ${camera_name} (${device_id})`);
+
+  if (!ioRef) ioRef = io; // simpan referensi io sekali saja
 
   const interval = setInterval(async () => {
     const dummyImage = 'data:image/jpeg;base64,DUMMY_SNAPSHOT_BASE64';
@@ -41,21 +42,21 @@ const startCameraWorker = (camera) => {
       console.error('❌ Gagal simpan riwayat:', simpan.error.message);
     } else {
       console.log(`📸 Deteksi dari '${camera_name}' disimpan ke riwayat!`);
-    
-      // Emit event ke frontend
-      io.emit('bounding-box', {
-        camera_name,
-        bounding_box,
-        photo: dummyImage,
-        label,
-        video_path,
-        timestamp: new Date().toISOString(),
-      });
-    }
-    
-  }, 60_000); // interval 10 detik
 
-  // Simpan interval ID agar bisa dihentikan nanti
+      // 💥 Emit socket event setelah io tersedia
+      if (ioRef) {
+        ioRef.emit('bounding-box', {
+          camera_name,
+          bounding_box,
+          photo: dummyImage,
+          label,
+          video_path,
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+  }, 60_000);
+
   cameraLoops[camera_id] = interval;
 };
 
