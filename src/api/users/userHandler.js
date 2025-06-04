@@ -52,8 +52,9 @@ const registerHandler = async (request, h) => {
 
 
 const loginHandler = async (request, h) => {
-  console.time('login'); // mulai stopwatch
+  console.log('🛂 Login request received');
   const { email, password } = request.payload;
+  console.log('🔐 Payload:', email, password);
 
   const { user, error } = await findUserByEmail(email);
   if (!user || !(await comparePassword(password, user.password))) {
