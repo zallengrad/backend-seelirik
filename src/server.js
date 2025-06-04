@@ -58,6 +58,16 @@ const init = async () => {
   };
 
   setBroadcast(broadcast);
+
+  // Tambahkan di bawah setBroadcast(broadcast);
+function keepAlive() {
+  setInterval(() => {
+    console.log('🧭 Keeping Railway container alive...');
+  }, 1000 * 60 * 5);
+}
+keepAlive();
+
+
 };
 
 process.on('unhandledRejection', (err) => {
