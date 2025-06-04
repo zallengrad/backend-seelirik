@@ -1,7 +1,7 @@
 const { detectShopliftingDummy } = require('./mlService');
 const { simpanKeRiwayat } = require('./historyService');
-const { getIO } = require('../socketHandler'); // ✅ Tambah ini
 
+// Registry untuk semua kamera yang sedang jalan loop deteksinya
 const cameraLoops = {};
 
 const startCameraWorker = (camera) => {
@@ -16,6 +16,7 @@ const startCameraWorker = (camera) => {
 
   const interval = setInterval(async () => {
     const dummyImage = 'data:image/jpeg;base64,DUMMY_SNAPSHOT_BASE64';
+
     const result = await detectShopliftingDummy(dummyImage);
 
     if (!result) {
@@ -38,16 +39,22 @@ const startCameraWorker = (camera) => {
       console.error('❌ Gagal simpan riwayat:', simpan.error.message);
     } else {
       console.log(`📸 Deteksi dari '${camera_name}' disimpan ke riwayat!`);
-
-      // ✅ Emit ke frontend via WebSocket
-      getIO().emit('newDetection', {
-        camera_id,
-        camera_name,
-        label,
-        bounding_box,
-      });
     }
-  }, 5_000);
+  }, 10_000); // interval 10 detik
 
+  // Simpan interval ID agar bisa dihentikan nanti
   cameraLoops[camera_id] = interval;
+};
+
+const stopCameraWorker = (camera_id) => {
+  if (cameraLoops[camera_id]) {
+    clearInterval(cameraLoops[camera_id]);
+    delete cameraLoops[camera_id];
+    console.log(`🛑 Worker untuk kamera '${camera_id}' dihentikan.`);
+  }
+};
+
+module.exports = {
+  startCameraWorker,
+  stopCameraWorker,
 };
