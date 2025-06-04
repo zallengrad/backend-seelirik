@@ -58,14 +58,13 @@ const init = async () => {
     });
   });
 
-  await server.initialize(); // opsional (untuk test)
-  await server.start();
 
-  // Gunakan httpServer untuk mendengar (bukan server.listener langsung)
-  httpServer.listen(server.info.port, () => {
-    console.log('🚀 SeeLirik Backend + Socket.IO aktif di:', server.info.uri);
+  await server.initialize(); // untuk setup route, plugin, dll
+  
+  httpServer.listen(3000, () => {
+    console.log(`🚀 Server & Socket.IO aktif di: http://localhost:3000`);
   });
-};
+  
 
 
 process.on('unhandledRejection', (err) => {
