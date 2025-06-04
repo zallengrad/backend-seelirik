@@ -1,10 +1,8 @@
 const { detectShopliftingDummy } = require('./mlService');
 const { simpanKeRiwayat } = require('./historyService');
-const { broadcast } = require('../server');
+const { getBroadcast } = require('../global'); // ✅ ambil dari global
+const broadcast = getBroadcast(); // ✅ langsung panggil
 
-
-
-// Registry untuk semua kamera yang sedang jalan loop deteksinya
 const cameraLoops = {};
 
 const startCameraWorker = (camera) => {
@@ -42,21 +40,20 @@ const startCameraWorker = (camera) => {
       console.error('❌ Gagal simpan riwayat:', simpan.error.message);
     } else {
       console.log(`📸 Deteksi dari '${camera_name}' disimpan ke riwayat!`);
-      
+
       broadcast({
         type: 'new-detection',
         payload: {
           camera_id,
           camera_name,
           label,
+          bounding_box,
           timestamp: new Date().toISOString(),
         },
       });
     }
-    
-  }, 10_000); // interval 10 detik
+  }, 10_000);
 
-  // Simpan interval ID agar bisa dihentikan nanti
   cameraLoops[camera_id] = interval;
 };
 

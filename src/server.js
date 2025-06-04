@@ -5,8 +5,7 @@ const historyRoutes = require('./api/histories/historyRoutes');
 
 const http = require('http');
 const { WebSocketServer } = require('ws');
-
-let globalBroadcast = () => {}; // placeholder awal
+const { setBroadcast } = require('./global'); // ✅ tambahkan
 
 const init = async () => {
   const server = Hapi.server({
@@ -21,15 +20,12 @@ const init = async () => {
     },
   });
 
-  // Daftarkan semua route
   server.route({ method: 'GET', path: '/', handler: () => ({ message: 'SeeLirik Backend is running!' }) });
   server.route(userRoutes);
   server.route(cameraRoutes);
   server.route(historyRoutes);
 
-  // Gabungkan HTTP listener untuk WebSocket
   const listener = http.createServer(server.listener);
-
   const wss = new WebSocketServer({ server: listener });
 
   const clients = new Set();
@@ -44,8 +40,7 @@ const init = async () => {
     });
   });
 
-  // Simpan fungsi broadcast ke dalam app
-  globalBroadcast = (message) => {
+  const broadcast = (message) => {
     const data = JSON.stringify(message);
     for (const client of clients) {
       if (client.readyState === 1) {
@@ -54,7 +49,9 @@ const init = async () => {
     }
   };
 
-  await server.initialize(); // persiapkan server Hapi
+  setBroadcast(broadcast); // ✅ simpan ke global
+
+  await server.initialize();
   listener.listen(server.info.port, () => {
     console.log(`🚀 SeeLirik Backend + WebSocket aktif di: ${server.info.uri}`);
   });
@@ -66,8 +63,3 @@ process.on('unhandledRejection', (err) => {
 });
 
 init();
-
-// Ekspor fungsi broadcast agar bisa dipakai di worker
-module.exports = {
-  broadcast: (msg) => globalBroadcast(msg),
-};
