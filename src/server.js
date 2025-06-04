@@ -3,51 +3,38 @@ const userRoutes = require('./api/users/userRoutes');
 const cameraRoutes = require('./api/cameras/cameraRoutes');
 const historyRoutes = require('./api/histories/historyRoutes');
 
-const http = require('http');
 const { WebSocketServer } = require('ws');
-const { setBroadcast } = require('./global'); // untuk simpan fungsi broadcast
+const { setBroadcast } = require('./global');
 
 const init = async () => {
   const server = Hapi.server({
     port: process.env.PORT || 3000,
-    host: process.env.NODE_ENV !== 'production' ? 'localhost' : '0.0.0.0',
+    host: '0.0.0.0',
     routes: {
       cors: {
-        origin: ['http://localhost:3002', 'https://your-frontend.vercel.app'], // sesuaikan untuk produksi
+        origin: ['http://localhost:3002', 'https://your-frontend.vercel.app'],
         headers: ['Accept', 'Content-Type', 'Authorization'],
         credentials: true,
       },
     },
   });
 
-  // Tambahkan route dasar
-  server.route({
-    method: 'GET',
-    path: '/',
-    handler: () => {
-      return { message: 'SeeLirik Backend is running!' };
-    },
-  });
-
-  // Tambahkan semua route lainnya
+  // Routes
+  server.route({ method: 'GET', path: '/', handler: () => ({ message: 'SeeLirik Backend is running!' }) });
   server.route(userRoutes);
   server.route(cameraRoutes);
   server.route(historyRoutes);
 
-  // Jalankan Hapi server
-  await server.start();
-  console.log(`🚀 Hapi.js aktif di ${server.info.uri}`);
+  // 🚫 Jangan pakai server.start()
+  await server.initialize(); // hanya inisialisasi plugin dan route
 
-  // Jalankan WebSocket di port yang sama
-  const listener = http.createServer(server.listener);
-  const wss = new WebSocketServer({ server: listener });
-
+  // Gunakan server.listener untuk WebSocket
+  const wss = new WebSocketServer({ server: server.listener });
   const clients = new Set();
 
   wss.on('connection', (ws) => {
     console.log('🟢 Client WebSocket terhubung');
     clients.add(ws);
-
     ws.on('close', () => {
       clients.delete(ws);
       console.log('🔴 Client WebSocket terputus');
@@ -63,12 +50,9 @@ const init = async () => {
     }
   };
 
-  setBroadcast(broadcast); // simpan agar bisa diakses dari worker.js
+  setBroadcast(broadcast);
 
-  const port = process.env.PORT || 3000;
-  listener.listen(port, () => {
-    console.log(`📡 WebSocket + API aktif di http://0.0.0.0:${port}`);
-  });
+  console.log(`🚀 SeeLirik Backend & WebSocket siap di ${server.info.uri}`);
 };
 
 process.on('unhandledRejection', (err) => {
