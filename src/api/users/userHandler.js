@@ -52,6 +52,7 @@ const registerHandler = async (request, h) => {
 
 
 const loginHandler = async (request, h) => {
+  console.time('login'); // mulai stopwatch
   const { email, password } = request.payload;
 
   const { user, error } = await findUserByEmail(email);

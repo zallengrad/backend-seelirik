@@ -52,14 +52,12 @@ const init = async () => {
     });
   });
 
-  await server.initialize(); // Inisialisasi plugin/route
-
-  // Ganti server.start() dengan httpServer.listen()
-  const port = server.info.port;
+  await server.initialize(); 
+  const port = process.env.PORT || 3000;
   httpServer.listen(port, () => {
-    console.log(`🚀 Server berjalan di: http://0.0.0.0:${port}`);
+    console.log(`🚀 Server running at http://0.0.0.0:${port}`);
   });
-};
+  
 
 process.on('unhandledRejection', (err) => {
   console.error(err);
