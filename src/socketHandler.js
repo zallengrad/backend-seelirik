@@ -3,9 +3,14 @@ const { Server } = require('socket.io');
 let io = null;
 
 function initSocket(server) {
-  io = new Server(server.listener, {
-    cors: { origin: '*' }  // Ubah jika ingin dibatasi
-  });
+    io = new Server(server.listener, {
+        cors: {
+          origin: 'http://localhost:3002',
+          methods: ['GET', 'POST'],
+          credentials: true,
+        }
+      });
+      
 
   io.on('connection', (socket) => {
     console.log('🔌 WebSocket client connected');
