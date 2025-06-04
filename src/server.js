@@ -60,10 +60,10 @@ const init = async () => {
 
 
   await server.initialize(); // untuk setup route, plugin, dll
+
+  await server.start(); // 🔥 WAJIB agar Hapi aktif sepenuhnya
+  console.log(`🚀 Server berjalan di: ${server.info.uri}`);
   
-  httpServer.listen(3000, () => {
-    console.log(`🚀 Server & Socket.IO aktif di: http://localhost:3000`);
-  });
   
 };
 
