@@ -34,3 +34,5 @@ const userRoutes = [
     },
   },
 ];
+
+module.exports = userRoutes; // ✅ Pastikan export-nya array!
