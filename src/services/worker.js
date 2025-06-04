@@ -55,7 +55,7 @@ const startCameraWorker = (camera, io) => {
         });
       }
     }
-  }, 60_000);
+  }, 10_000);
 
   cameraLoops[camera_id] = interval;
 };

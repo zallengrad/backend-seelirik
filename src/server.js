@@ -5,14 +5,10 @@ const historyRoutes = require('./api/histories/historyRoutes');
 const http = require('http');
 const { Server } = require('socket.io');
 
-
-
-
-
 const init = async () => {
   const server = Hapi.server({
-    port: 3000,
-    host: process.env.NODE_ENV !== 'production' ? 'localhost' : '0.0.0.0',
+    port: process.env.PORT || 3000, // Railway otomatis atur PORT
+    host: '0.0.0.0',
     routes: {
       cors: {
         origin: ['*'],
@@ -22,7 +18,7 @@ const init = async () => {
     },
   });
 
-  // Tambahkan routes Hapi seperti biasa
+  // Tambahkan semua route
   server.route([
     {
       method: 'GET',
@@ -36,7 +32,7 @@ const init = async () => {
     ...historyRoutes,
   ]);
 
-  // 🔌 Siapkan HTTP server manual untuk socket.io
+  // 🔌 Bungkus Hapi dengan http server
   const httpServer = http.createServer(server.listener);
 
   // 🔄 Inisialisasi Socket.IO
@@ -46,32 +42,28 @@ const init = async () => {
     },
   });
 
-  // 💾 Simpan io agar bisa dipakai di worker.js
+  // 💾 Simpan io ke dalam server.app
   server.app.io = io;
 
-  // 🔁 Handler saat frontend connect ke websocket
   io.on('connection', (socket) => {
     console.log('🟢 Client terhubung:', socket.id);
-
     socket.on('disconnect', () => {
       console.log('🔴 Client keluar:', socket.id);
     });
   });
 
+  await server.initialize(); // Inisialisasi plugin/route
 
-  await server.initialize(); // untuk setup route, plugin, dll
-
-  await server.start(); // 🔥 WAJIB agar Hapi aktif sepenuhnya
-  console.log(`🚀 Server berjalan di: ${server.info.uri}`);
-  
-  
+  // Ganti server.start() dengan httpServer.listen()
+  const port = server.info.port;
+  httpServer.listen(port, () => {
+    console.log(`🚀 Server berjalan di: http://0.0.0.0:${port}`);
+  });
 };
 
 process.on('unhandledRejection', (err) => {
-  console.log(err);
+  console.error(err);
   process.exit(1);
 });
 
 init();
-
-// finish server
