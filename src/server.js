@@ -73,3 +73,5 @@ process.on('unhandledRejection', (err) => {
 });
 
 init();
+
+// finish server
