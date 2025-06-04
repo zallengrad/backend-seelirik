@@ -25,7 +25,9 @@ const init = async () => {
     handler: () => ({ message: 'SeeLirik Backend is running!' }),
   });
 
+  console.log('📦 Mendaftarkan userRoutes...');
   server.route(userRoutes);
+  console.log('✅ Berhasil daftar userRoutes!');  
   server.route(cameraRoutes);
   server.route(historyRoutes);
 
