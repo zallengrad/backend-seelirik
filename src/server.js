@@ -2,10 +2,7 @@ const Hapi = require('@hapi/hapi');
 const userRoutes = require('./api/users/userRoutes');
 const cameraRoutes = require('./api/cameras/cameraRoutes');
 const historyRoutes = require('./api/histories/historyRoutes');
-
-
-
-
+const { initSocket } = require('./socketHandler'); // ⬅️ Tambahan
 
 const init = async () => {
   const server = Hapi.server({
@@ -34,11 +31,6 @@ const init = async () => {
 
   await server.start();
   console.log('🚀 SeeLirik Backend Server berjalan di:', server.info.uri);
+
+  initSocket(server); // ⬅️ Aktifkan WebSocket setelah server Hapi jalan
 };
-
-process.on('unhandledRejection', (err) => {
-  console.log(err);
-  process.exit(1);
-});
-
-init();
