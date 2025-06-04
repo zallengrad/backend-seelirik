@@ -5,7 +5,7 @@ const historyRoutes = require('./api/histories/historyRoutes');
 
 const http = require('http');
 const { WebSocketServer } = require('ws');
-const { setBroadcast } = require('./global'); // ✅ tambahkan
+const { setBroadcast } = require('./global'); // untuk simpan fungsi broadcast
 
 const init = async () => {
   const server = Hapi.server({
@@ -13,18 +13,32 @@ const init = async () => {
     host: process.env.NODE_ENV !== 'production' ? 'localhost' : '0.0.0.0',
     routes: {
       cors: {
-        origin: ['http://localhost:3002', 'https://your-frontend-domain.vercel.app'],
+        origin: ['http://localhost:3002', 'https://your-frontend.vercel.app'], // sesuaikan untuk produksi
         headers: ['Accept', 'Content-Type', 'Authorization'],
         credentials: true,
       },
     },
   });
 
-  server.route({ method: 'GET', path: '/', handler: () => ({ message: 'SeeLirik Backend is running!' }) });
+  // Tambahkan route dasar
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: () => {
+      return { message: 'SeeLirik Backend is running!' };
+    },
+  });
+
+  // Tambahkan semua route lainnya
   server.route(userRoutes);
   server.route(cameraRoutes);
   server.route(historyRoutes);
 
+  // Jalankan Hapi server
+  await server.start();
+  console.log(`🚀 Hapi.js aktif di ${server.info.uri}`);
+
+  // Jalankan WebSocket di port yang sama
   const listener = http.createServer(server.listener);
   const wss = new WebSocketServer({ server: listener });
 
@@ -49,16 +63,16 @@ const init = async () => {
     }
   };
 
-  setBroadcast(broadcast); // ✅ simpan ke global
+  setBroadcast(broadcast); // simpan agar bisa diakses dari worker.js
 
-  await server.initialize();
-  listener.listen(server.info.port, () => {
-    console.log(`🚀 SeeLirik Backend + WebSocket aktif di: ${server.info.uri}`);
+  const port = process.env.PORT || 3000;
+  listener.listen(port, () => {
+    console.log(`📡 WebSocket + API aktif di http://0.0.0.0:${port}`);
   });
 };
 
 process.on('unhandledRejection', (err) => {
-  console.log(err);
+  console.error(err);
   process.exit(1);
 });
 
