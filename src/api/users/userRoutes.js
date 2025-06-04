@@ -18,6 +18,15 @@ const userRoutes = [
     },
   },
   {
+    method: 'POST',
+    path: '/login-test',
+    handler: async (request, h) => {
+      console.log('📥 /login-test masuk');
+      const { email, password } = request.payload;
+      return h.response({ status: 'ok', email, password }).code(200);
+    },
+  },
+  {
     method: 'GET',
     path: '/account',
     handler: getAccountHandler,

@@ -7,8 +7,14 @@ const findUserByEmail = async (email) => {
     .eq('email', email)
     .single();
 
-  return { user: data, error };
+  if (error) {
+    console.error('❌ Error Supabase:', error.message); // tambahkan ini
+    return { user: null, error };
+  }
+
+  return { user: data, error: null };
 };
+
 
 const createUser = async ({
   email,
