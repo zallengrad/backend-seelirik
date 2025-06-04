@@ -2,7 +2,6 @@ const Hapi = require('@hapi/hapi');
 const userRoutes = require('./api/users/userRoutes');
 const cameraRoutes = require('./api/cameras/cameraRoutes');
 const historyRoutes = require('./api/histories/historyRoutes');
-
 const { WebSocketServer } = require('ws');
 const { setBroadcast } = require('./global');
 
@@ -12,23 +11,29 @@ const init = async () => {
     host: '0.0.0.0',
     routes: {
       cors: {
-        origin: ['http://localhost:3002', 'https://your-frontend.vercel.app'],
+        origin: ['http://localhost:3002', 'https://your-frontend.vercel.app'], // ganti domain produksi
         headers: ['Accept', 'Content-Type', 'Authorization'],
         credentials: true,
       },
     },
   });
 
-  // Routes
-  server.route({ method: 'GET', path: '/', handler: () => ({ message: 'SeeLirik Backend is running!' }) });
+  // Tambahkan route
+  server.route({
+    method: 'GET',
+    path: '/',
+    handler: () => ({ message: 'SeeLirik Backend is running!' }),
+  });
+
   server.route(userRoutes);
   server.route(cameraRoutes);
   server.route(historyRoutes);
 
-  // 🚫 Jangan pakai server.start()
-  await server.initialize(); // hanya inisialisasi plugin dan route
+  // Jalankan server Hapi dulu
+  await server.start();
+  console.log(`🚀 SeeLirik Backend aktif di: ${server.info.uri}`);
 
-  // Gunakan server.listener untuk WebSocket
+  // WebSocket menggunakan listener yang sama
   const wss = new WebSocketServer({ server: server.listener });
   const clients = new Set();
 
@@ -51,8 +56,6 @@ const init = async () => {
   };
 
   setBroadcast(broadcast);
-
-  console.log(`🚀 SeeLirik Backend & WebSocket siap di ${server.info.uri}`);
 };
 
 process.on('unhandledRejection', (err) => {
