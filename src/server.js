@@ -65,7 +65,7 @@ const init = async () => {
     console.log(`🚀 Server & Socket.IO aktif di: http://localhost:3000`);
   });
   
-
+};
 
 process.on('unhandledRejection', (err) => {
   console.log(err);
