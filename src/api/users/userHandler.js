@@ -50,18 +50,18 @@ const registerHandler = async (request, h) => {
   return h.response({ message: 'Register success', user: newUser }).code(201);
 };
 
-console.log('👋 userHandler.js LOADED');
+
 const loginHandler = async (request, h) => {
-  console.log('🧪 Login handler dummy test terpanggil!');
-  return h.response({
-    status: 'success',
-    message: 'Login dummy berhasil!',
-  }).code(200);
+  const { email, password } = request.payload;
+
+  const { user, error } = await findUserByEmail(email);
+  if (!user || !(await comparePassword(password, user.password))) {
+    return h.response({ message: 'Invalid email or password' }).code(401);
+  }
+
+  const token = generateToken({ id: user.id, email: user.email });
+  return h.response({ message: 'Login success', token }).code(200);
 };
-
-
-
-
 
 const getAccountHandler = async (request, h) => {
     try {
