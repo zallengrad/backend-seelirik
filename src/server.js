@@ -13,7 +13,7 @@ const init = async () => {
     host: process.env.NODE_ENV !== 'production' ? 'localhost' : '0.0.0.0',
     routes: {
       cors: {
-        origin: ['*'],
+        origin: ['http://localhost:3002', 'https://your-frontend-domain.vercel.app'],
         headers: ['Accept', 'Content-Type', 'Authorization'],
         credentials: true,
       },
