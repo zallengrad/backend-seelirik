@@ -52,16 +52,22 @@ const registerHandler = async (request, h) => {
 
 
 const loginHandler = async (request, h) => {
+  console.log('🔐 Login handler called'); // ✅ Tambahkan ini
+
   const { email, password } = request.payload;
+  console.log('🟢 Payload:', email); // ✅ Lihat payload masuk
 
   const { user, error } = await findUserByEmail(email);
   if (!user || !(await comparePassword(password, user.password))) {
+    console.log('❌ Login gagal'); // ✅ Tambahkan log error login
     return h.response({ message: 'Invalid email or password' }).code(401);
   }
 
   const token = generateToken({ id: user.id, email: user.email });
+  console.log('✅ Login success'); // ✅ Sukses login
   return h.response({ message: 'Login success', token }).code(200);
 };
+
 
 const getAccountHandler = async (request, h) => {
     try {
