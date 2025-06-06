@@ -1,43 +1,31 @@
-const detectShopliftingDummy = async (imageBase64) => {
-    // Simulasi hasil deteksi: 50% kemungkinan terdeteksi
-    const detected = Math.random() > 0.5;
-  
-    if (!detected) return null;
-  
-    // Dummy hasil deteksi
-    return {
-      label: 'Shoplifting Detected',
-      bounding_box: {
-        x: Math.floor(Math.random() * 300),
-        y: Math.floor(Math.random() * 200),
-        width: 100,
-        height: 150,
-      },
-      video_path: 'https://dummy.video.path/shoplifting.mp4', // placeholder
-    };
-  };
-  
-  module.exports = {
-    detectShopliftingDummy,
-  };
-  
+// mlService.js
+const axios = require('axios');
+const FormData = require('form-data');
 
-//   real
-// const axios = require('axios');
+const detectShopliftingReal = async (base64Image, cameraName) => {
+  try {
+    // Convert base64 → buffer → stream (karena FastAPI pakai UploadFile)
+    const matches = base64Image.match(/^data:.*;base64,(.*)$/);
+    const buffer = Buffer.from(matches[1], 'base64');
 
-// const detectShopliftingReal = async (imageBase64) => {
-//   try {
-//     const response = await axios.post('http://localhost:8000/predict', {
-//       image: imageBase64,
-//     });
+    const form = new FormData();
+    form.append('image', buffer, {
+      filename: 'snapshot.jpg',
+      contentType: 'image/jpeg',
+    });
+    form.append('camera_name', cameraName);
 
-//     return response.data; // harus mengandung label, bbox, video_path, dll
-//   } catch (error) {
-//     console.error('Gagal fetch ke ML:', error.message);
-//     return null;
-//   }
-// };
+    const response = await axios.post('http://localhost:8000/predict', form, {
+      headers: form.getHeaders(),
+    });
 
-// module.exports = {
-//     detectShopliftingDummy: detectShopliftingReal, // nanti tinggal ganti ini
-//   };
+    return response.data;
+  } catch (error) {
+    console.error('❌ Gagal fetch ke model ML:', error.message);
+    return null;
+  }
+};
+
+module.exports = {
+  detectShopliftingReal,
+};

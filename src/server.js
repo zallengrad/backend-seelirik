@@ -2,6 +2,7 @@ const Hapi = require('@hapi/hapi');
 const userRoutes = require('./api/users/userRoutes');
 const cameraRoutes = require('./api/cameras/cameraRoutes');
 const historyRoutes = require('./api/histories/historyRoutes');
+const snapshotRoutes = require('./api/snapshots/snapshotRoutes');
 
 
 
@@ -31,6 +32,8 @@ const init = async () => {
   server.route(userRoutes);
   server.route(cameraRoutes);
   server.route(historyRoutes);
+  server.route(snapshotRoutes);
+
 
   await server.start();
   console.log('🚀 SeeLirik Backend Server berjalan di:', server.info.uri);

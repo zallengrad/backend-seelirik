@@ -6,10 +6,6 @@ const {
   deleteCameraById,
   softDeleteCameraByDeviceId,
 } = require('../../services/cameraService');
-const {
-  startCameraWorker,
-  stopCameraWorker,
-} = require('../../services/worker');
 
 // POST /cameras
 const postCameraHandler = async (request, h) => {
@@ -39,10 +35,6 @@ const postCameraHandler = async (request, h) => {
     if (error || !camera) {
       return h.response({ message: 'Failed to add camera', error }).code(500);
     }
-
-    const io = request.server.app.io;
-    startCameraWorker(camera, io);
-
 
     return h.response({
       message: 'Camera added successfully',
@@ -81,13 +73,8 @@ const updateCameraHandler = async (request, h) => {
       return h.response({ message: 'Failed to update camera' }).code(500);
     }
 
-    stopCameraWorker(id);
-    const io = request.server.app.io;
-    startCameraWorker(camera, io);
-    
-
     return h.response({
-      message: 'Camera updated & worker restarted',
+      message: 'Camera updated successfully',
       camera,
     }).code(200);
   } catch (err) {
@@ -109,8 +96,6 @@ const deleteCameraHandler = async (request, h) => {
     if (!camera) {
       return h.response({ message: 'Camera not found' }).code(404);
     }
-
-    stopCameraWorker(id);
 
     return h.response({ message: 'Camera deleted successfully', camera }).code(200);
   } catch (err) {
