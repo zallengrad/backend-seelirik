@@ -58,12 +58,12 @@ const postSnapshotHandler = async (request, h) => {
           payload: {
             camera_name,
             label,
-            photo,
             bounding_box,
             confidence,
           },
         }),
       });
+      
 
       console.log('📡 Emit ke WebSocket server berhasil!');
     } catch (err) {
