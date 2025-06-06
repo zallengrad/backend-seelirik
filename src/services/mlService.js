@@ -15,7 +15,7 @@ const detectShopliftingReal = async (base64Image, cameraName) => {
     });
     form.append('camera_name', cameraName);
 
-    const response = await axios.post('http://localhost:8000/predict', form, {
+    const response = await axios.post('http://127.0.0.1:8000/predict', form, {
       headers: form.getHeaders(),
     });
 
